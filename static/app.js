@@ -24,11 +24,17 @@ function getModeStyle(mode) {
     }
 }
 
+const NOTIF_PERM_KEY = "swiss-bus-tracker.notif-enabled";
+const ALERT_OPTIONS = [0, 2, 5, 10]; // 0 = disabled
+
 // State
 let favorites = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 let errorCounts = {};
 let selectedStop = null;
 let updateTimestamps = {};
+let notifiedSet = new Set();
+let notifEnabled = localStorage.getItem(NOTIF_PERM_KEY) === "true";
+let lastDelays = {};
 
 // DOM
 const searchInput = document.getElementById("stop-search");
@@ -39,9 +45,11 @@ const favStopRef = document.getElementById("fav-stop-ref");
 const favLine = document.getElementById("fav-line");
 const favDirection = document.getElementById("fav-direction");
 const addFavBtn = document.getElementById("add-fav-btn");
+const favAlert = document.getElementById("fav-alert");
 const favoritesList = document.getElementById("favorites-list");
 const emptyState = document.getElementById("empty-state");
 const refreshAllBtn = document.getElementById("refresh-all-btn");
+const notifBtn = document.getElementById("notif-btn");
 
 // --- Search ---
 let debounceTimer = null;
@@ -113,6 +121,7 @@ addFavBtn.addEventListener("click", () => {
         stopName: favStopName.value,
         line: favLine.value.trim() || null,
         direction: favDirection.value.trim() || null,
+        alertMin: parseInt(favAlert.value) || 0,
         createdAt: new Date().toISOString(),
     };
     favorites.push(fav);
@@ -143,6 +152,7 @@ function renderFavorites() {
                     <span class="font-semibold text-stone-800 truncate">${escapeHtml(fav.stopName)}</span>
                     ${fav.line ? `<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-xs font-bold">${escapeHtml(fav.line)}</span>` : ""}
                     ${fav.direction ? `<span class="text-stone-400 text-xs truncate">\u2192 ${escapeHtml(fav.direction)}</span>` : ""}
+                    ${fav.alertMin ? `<span class="px-1.5 py-0.5 bg-blue-50 text-blue-500 rounded text-xs">\uD83D\uDD14 ${fav.alertMin}min</span>` : ""}
                 </div>
                 <button onclick="removeFavorite('${fav.id}')" class="text-stone-300 hover:text-rose-500 ml-2 text-lg leading-none transition" title="Supprimer">&times;</button>
             </div>
@@ -177,6 +187,7 @@ async function fetchDepartures(fav) {
         renderDepartures(container, deps);
         updateTimestamps[fav.id] = Date.now();
         if (footerTime) footerTime.textContent = `Mis \u00e0 jour il y a 0s`;
+        checkNotifications(fav, deps);
     } catch (e) {
         errorCounts[fav.id] = (errorCounts[fav.id] || 0) + 1;
         if (errorCounts[fav.id] >= MAX_RETRIES) {
@@ -262,6 +273,83 @@ setInterval(() => {
         }
     }
 }, 1000);
+
+// --- Notifications ---
+function initNotifButton() {
+    if (!("Notification" in window)) return;
+    notifBtn.classList.remove("hidden");
+    updateNotifButton();
+    notifBtn.addEventListener("click", async () => {
+        if (Notification.permission === "default") {
+            const perm = await Notification.requestPermission();
+            notifEnabled = perm === "granted";
+        } else {
+            notifEnabled = !notifEnabled;
+        }
+        localStorage.setItem(NOTIF_PERM_KEY, notifEnabled);
+        updateNotifButton();
+    });
+}
+
+function updateNotifButton() {
+    if (Notification.permission === "granted" && notifEnabled) {
+        notifBtn.textContent = "\uD83D\uDD14";
+        notifBtn.classList.remove("bg-stone-100", "text-stone-500");
+        notifBtn.classList.add("bg-blue-100", "text-blue-600");
+        notifBtn.title = "Notifications activ\u00e9es";
+    } else {
+        notifBtn.textContent = "\uD83D\uDD15";
+        notifBtn.classList.remove("bg-blue-100", "text-blue-600");
+        notifBtn.classList.add("bg-stone-100", "text-stone-500");
+        notifBtn.title = "Activer les notifications";
+    }
+}
+
+function checkNotifications(fav, deps) {
+    if (!notifEnabled || Notification.permission !== "granted") return;
+    const now = Date.now();
+
+    // Find next non-passed departure
+    const next = deps.find(d => !d.already_passed && d.status !== "cancelled");
+    if (!next) return;
+
+    const depTime = new Date(next.estimated_time || next.scheduled_time).getTime();
+    const minsUntil = (depTime - now) / 60000;
+    const notifKey = `${fav.stopRef}:${next.scheduled_time}`;
+
+    // Alert X min before
+    if (fav.alertMin && fav.alertMin > 0) {
+        const lo = fav.alertMin - 0.5;
+        const hi = fav.alertMin + 0.5;
+        if (minsUntil >= lo && minsUntil <= hi && !notifiedSet.has(notifKey)) {
+            notifiedSet.add(notifKey);
+            const heureLocale = new Date(depTime).toLocaleTimeString("fr-CH", TIME_FMT);
+            new Notification(`\uD83D\uDE8C Ligne ${next.line} \u2192 ${next.destination}`, {
+                body: `D\u00e9part de ${fav.stopName} dans ${Math.round(minsUntil)} min (${heureLocale})`,
+                tag: notifKey,
+                icon: "/static/icon-192.png",
+                badge: "/static/icon-192.png",
+                requireInteraction: false,
+            });
+        }
+    }
+
+    // Big delay alert (>10 min increase between refreshes)
+    const delayKey = `${fav.id}:${next.scheduled_time}`;
+    const prevDelay = lastDelays[delayKey];
+    if (prevDelay !== undefined && next.delay_minutes - prevDelay >= 10 && !notifiedSet.has(`delay:${delayKey}`)) {
+        notifiedSet.add(`delay:${delayKey}`);
+        new Notification(`\u26A0\uFE0F Retard important : +${next.delay_minutes} min`, {
+            body: `Ligne ${next.line} \u2192 ${next.destination} depuis ${fav.stopName}`,
+            tag: `delay:${delayKey}`,
+            icon: "/static/icon-192.png",
+            requireInteraction: false,
+        });
+    }
+    lastDelays[delayKey] = next.delay_minutes;
+}
+
+initNotifButton();
 
 // --- Init ---
 function escapeHtml(str) {
