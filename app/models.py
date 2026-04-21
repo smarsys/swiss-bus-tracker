@@ -16,6 +16,7 @@ class DepartureStatus(str, Enum):
     on_time = "onTime"
     delayed = "delayed"
     cancelled = "cancelled"
+    scheduled = "scheduled"
     unknown = "unknown"
 
 
@@ -34,7 +35,7 @@ class Departure(BaseModel):
         if self.status == DepartureStatus.cancelled:
             return
         if self.estimated_time is None:
-            self.status = DepartureStatus.unknown
+            self.status = DepartureStatus.scheduled
             self.delay_minutes = 0
         else:
             delta = (self.estimated_time - self.scheduled_time).total_seconds()

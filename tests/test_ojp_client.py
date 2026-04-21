@@ -37,12 +37,12 @@ def test_parse_stop_event_response(stop_event_response_xml):
     assert d1.already_passed is False
     assert d1.mode == "bus"
 
-    # Second: no estimated time → unknown status, 0 delay
+    # Second: no estimated time → scheduled status, 0 delay
     d2 = deps[1]
     assert d2.line == "425"
     assert d2.destination == "Lausanne-Flon"
     assert d2.delay_minutes == 0
-    assert d2.status == DepartureStatus.unknown
+    assert d2.status == DepartureStatus.scheduled
     assert d2.estimated_time is None
 
 
@@ -69,6 +69,48 @@ def test_already_passed_logic():
     dep2.compute_status_and_delay(now)
     assert dep2.already_passed is False
     assert dep2.status == DepartureStatus.on_time
+
+
+def test_parse_real_stop_event_response():
+    """Parse a real OJP response (no realtime data → all scheduled)."""
+    from pathlib import Path
+    xml = (Path(__file__).parent / "fixtures" / "real_stop_event_response.xml").read_bytes()
+    now = datetime(2026, 4, 21, 9, 0, 0, tzinfo=timezone.utc)
+    deps = parse_stop_event_response(xml, now=now)
+    assert len(deps) == 5
+    for d in deps:
+        assert d.line == "425"
+        assert d.status == DepartureStatus.scheduled
+        assert d.estimated_time is None
+        assert d.delay_minutes == 0
+        assert d.already_passed is False
+        assert d.mode == "bus"
+    # Verify sorted by scheduled_time
+    times = [d.scheduled_time for d in deps]
+    assert times == sorted(times)
+
+
+def test_scheduled_vs_delayed_status():
+    """Scheduled when no estimated, delayed when estimated > scheduled."""
+    now = datetime(2026, 4, 21, 10, 0, 0, tzinfo=timezone.utc)
+    # No estimated → scheduled
+    dep1 = Departure(
+        line="1",
+        destination="A",
+        scheduled_time=datetime(2026, 4, 21, 11, 0, 0, tzinfo=timezone.utc),
+    )
+    dep1.compute_status_and_delay(now)
+    assert dep1.status == DepartureStatus.scheduled
+    # Estimated = scheduled → on_time
+    dep2 = Departure(
+        line="2",
+        destination="B",
+        scheduled_time=datetime(2026, 4, 21, 11, 0, 0, tzinfo=timezone.utc),
+        estimated_time=datetime(2026, 4, 21, 11, 0, 30, tzinfo=timezone.utc),
+    )
+    dep2.compute_status_and_delay(now)
+    assert dep2.status == DepartureStatus.on_time
+    assert dep2.delay_minutes == 0
 
 
 def test_cache_ttl():
