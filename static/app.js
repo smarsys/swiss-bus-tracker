@@ -9,6 +9,20 @@ const TIME_FMT = { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Zurich"
 // SVG icons
 const ICON_CHECK = `<svg class="inline w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
 const ICON_CLOCK = `<svg class="inline w-4 h-4 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/></svg>`;
+const ICON_BUS = `<svg class="inline w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4S4 2.5 4 6v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>`;
+const ICON_TRAIN = `<svg class="inline w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2c-4 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h2.23l2-2H14l2 2h2v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm3.5-6H6V6h5v5zm2 0V6h5v5h-5zm3.5 6c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`;
+const ICON_TRAM = `<svg class="inline w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 16.94V8.5c0-2.79-2.61-3.4-5.5-3.5l1.35-1.72c.31-.4.24-.98-.16-1.28-.4-.31-.98-.24-1.28.16L12 4.22l-1.41-2.06c-.31-.4-.88-.47-1.28-.16-.4.31-.47.88-.16 1.28L10.5 5C7.61 5.1 5 5.71 5 8.5v8.44c0 1.45 1.19 2.56 2.64 2.56h.86L7 21h2l1.5-1.5h3L15 21h2l-1.5-1.5h.86c1.45 0 2.64-1.11 2.64-2.56zM8.5 17c-.83 0-1.5-.67-1.5-1.5S7.67 14 8.5 14s1.5.67 1.5 1.5S9.33 17 8.5 17zm7 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm2.5-6H6V8h12v3z"/></svg>`;
+const ICON_OTHER = `<svg class="inline w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 8v4m0 4h.01"/></svg>`;
+
+function getModeStyle(mode) {
+    switch (mode) {
+        case "bus": return { bg: "#FFCC00", text: "#000", icon: ICON_BUS };
+        case "rail": return { bg: "#EB0000", text: "#fff", icon: ICON_TRAIN };
+        case "tram": return { bg: "#0079C1", text: "#fff", icon: ICON_TRAM };
+        case "metro": return { bg: "#0079C1", text: "#fff", icon: ICON_TRAM };
+        default: return { bg: "#44403c", text: "#fff", icon: ICON_OTHER };
+    }
+}
 
 // State
 let favorites = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -200,12 +214,13 @@ function renderDepartures(container, deps) {
             badgeHtml = `<span class="px-2 py-0.5 rounded bg-rose-600 text-white text-xs font-bold">+${d.delay_minutes} min</span>`;
         }
 
-        const lineBg = d.mode === "bus" ? "bg-amber-400" : d.mode === "rail" ? "bg-blue-500" : "bg-stone-500";
+        const ms = getModeStyle(d.mode);
         const rowClass = passed ? "departure-passed" : d.status === "cancelled" ? "departure-cancelled" : "";
 
         return `
         <div class="flex items-center gap-3 py-2.5 border-b border-stone-50 last:border-0 ${rowClass}">
-            <div class="line-badge px-2 py-1 rounded-lg text-white text-sm font-bold ${lineBg}">
+            <div class="line-badge flex items-center gap-1.5 px-2 py-1.5 rounded-lg font-bold font-mono text-sm" style="background:${ms.bg};color:${ms.text};min-width:48px;min-height:32px">
+                <span class="opacity-70">${ms.icon}</span>
                 ${escapeHtml(d.line)}
             </div>
             <div class="flex-1 min-w-0">
