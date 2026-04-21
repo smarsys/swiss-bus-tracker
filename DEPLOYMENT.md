@@ -66,3 +66,27 @@ git pull origin main
 ### Automatique (webhook)
 
 Configurez un webhook GitHub → Jelastic deploy hook pour déclencher un redéploiement automatique à chaque push sur `main`. Voir la [documentation Jelastic](https://docs.jelastic.com/git-svn-auto-deploy/).
+
+---
+
+## Déploiement alternatif via Docker
+
+### Build et test local
+
+```bash
+docker build -t swiss-bus-tracker .
+docker run --rm -p 8080:8080 -e OJP_API_KEY=your_key_here swiss-bus-tracker
+# Vérifier : curl http://localhost:8080/health
+```
+
+Le conteneur expose le port `8080` par défaut et inclut un healthcheck intégré (`/health`).
+
+### Jelastic Custom Container
+
+1. Dans le panel Jelastic, créez un environnement de type **Custom Docker Container**
+2. Pointez vers votre image :
+   - Build depuis le repo GitHub directement, ou
+   - Publiez l'image sur Docker Hub / GitHub Container Registry puis référencez-la
+3. Variables d'environnement à configurer dans le panel (même tableau que ci-dessus)
+4. Le port `8080` est exposé par défaut — configurez le mapping dans Jelastic si nécessaire
+5. Le healthcheck Docker est déjà configuré (`curl /health` toutes les 30s)
