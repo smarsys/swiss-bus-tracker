@@ -64,6 +64,9 @@ async def api_search_stops(
         raise HTTPException(status_code=502, detail=str(e))
 
 
+OJP_FETCH_SIZE = 50
+
+
 @app.get("/api/departures", response_model=list[Departure])
 async def api_departures(
     stop_ref: str = Query(..., alias="stopRef"),
@@ -72,7 +75,7 @@ async def api_departures(
     window_min: int = Query(60, ge=1, le=360),
     num_results: int = Query(10, ge=1, le=50),
 ):
-    cache_key = f"departures:{stop_ref}:{window_min}:{num_results}"
+    cache_key = f"departures:{stop_ref}:{window_min}"
     lock = cache.get_lock(cache_key)
     async with lock:
         cached = cache.get(cache_key)
@@ -80,7 +83,7 @@ async def api_departures(
             departures = cached
         else:
             try:
-                departures = await get_stop_events(stop_ref, window_min, num_results)
+                departures = await get_stop_events(stop_ref, window_min, OJP_FETCH_SIZE)
             except OJPError as e:
                 raise HTTPException(status_code=502, detail=str(e))
             cache.set(cache_key, departures)
@@ -91,7 +94,7 @@ async def api_departures(
         direction_lower = direction.lower()
         departures = [d for d in departures if direction_lower in d.destination.lower()]
 
-    return departures
+    return departures[:num_results]
 
 
 @app.get("/static/sw.js")

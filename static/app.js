@@ -175,7 +175,7 @@ async function fetchDepartures(fav) {
 
     const footerTime = footer?.querySelector(".update-time");
 
-    let url = `/api/departures?stopRef=${encodeURIComponent(fav.stopRef)}&num_results=5`;
+    let url = `/api/departures?stopRef=${encodeURIComponent(fav.stopRef)}&num_results=10`;
     if (fav.line) url += `&line=${encodeURIComponent(fav.line)}`;
     if (fav.direction) url += `&direction=${encodeURIComponent(fav.direction)}`;
 
