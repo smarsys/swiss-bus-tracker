@@ -1,5 +1,7 @@
 # 🚌 Swiss Bus Tracker
 
+[![CI](https://github.com/smarsys/swiss-bus-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/smarsys/swiss-bus-tracker/actions/workflows/ci.yml)
+
 Application web de suivi en temps réel des bus et trains du transport public suisse (CarPostal, CFF, tl, etc.). Utilise l'API OJP 2.0 d'[opentransportdata.swiss](https://opentransportdata.swiss) pour afficher les prochains départs à un arrêt donné, avec heure planifiée, heure réelle, retard et indication si le véhicule est déjà passé.
 
 ## Aperçu

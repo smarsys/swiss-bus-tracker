@@ -6,6 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -17,7 +18,18 @@ load_dotenv()
 
 logging.basicConfig(level=logging.DEBUG)
 
-app = FastAPI(title="Swiss Bus Tracker", version="0.1.0")
+VERSION = "0.2.0"
+
+app = FastAPI(title="Swiss Bus Tracker", version=VERSION)
+
+cors_origins = os.getenv("CORS_ORIGINS", "")
+if cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[o.strip() for o in cors_origins.split(",")],
+        allow_methods=["GET"],
+        allow_headers=["*"],
+    )
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 cache = TTLCache(ttl_seconds=int(os.getenv("CACHE_TTL_SECONDS", "20")))
@@ -25,7 +37,7 @@ cache = TTLCache(ttl_seconds=int(os.getenv("CACHE_TTL_SECONDS", "20")))
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "version": VERSION}
 
 
 @app.get("/api/debug/now")
