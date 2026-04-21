@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OJP xmlns="http://www.vdv.de/ojp" xmlns:siri="http://www.siri.org.uk/siri" version="2.0">
+    <OJPResponse>
+        <siri:ServiceDelivery>
+            <siri:ResponseTimestamp>2026-04-21T10:00:00+02:00</siri:ResponseTimestamp>
+            <OJPLocationInformationDelivery>
+                <siri:ResponseTimestamp>2026-04-21T10:00:00+02:00</siri:ResponseTimestamp>
+                <PlaceResult>
+                    <Place>
+                        <StopPlace>
+                            <StopPlaceRef>8595126</StopPlaceRef>
+                            <StopPlaceName><Text xml:lang="de">Oulens-sous-Echallens, Collège</Text></StopPlaceName>
+                        </StopPlace>
+                        <Name><Text xml:lang="de">Oulens-sous-Echallens, Collège (Oulens-sous-Echallens)</Text></Name>
+                        <GeoPosition>
+                            <siri:Longitude>6.63244</siri:Longitude>
+                            <siri:Latitude>46.63456</siri:Latitude>
+                        </GeoPosition>
+                    </Place>
+                    <Complete>true</Complete>
+                    <Probability>0.95</Probability>
+                </PlaceResult>
+                <PlaceResult>
+                    <Place>
+                        <StopPlace>
+                            <StopPlaceRef>8595127</StopPlaceRef>
+                            <StopPlaceName><Text xml:lang="de">Oulens-sous-Echallens, village</Text></StopPlaceName>
+                        </StopPlace>
+                        <Name><Text xml:lang="de">Oulens-sous-Echallens, village (Oulens-sous-Echallens)</Text></Name>
+                        <GeoPosition>
+                            <siri:Longitude>6.63100</siri:Longitude>
+                            <siri:Latitude>46.63500</siri:Latitude>
+                        </GeoPosition>
+                    </Place>
+                    <Complete>true</Complete>
+                    <Probability>0.90</Probability>
+                </PlaceResult>
+                <PlaceResult>
+                    <Place>
+                        <StopPlace>
+                            <StopPlaceRef>8595128</StopPlaceRef>
+                            <StopPlaceName><Text xml:lang="de">Echallens, gare</Text></StopPlaceName>
+                        </StopPlace>
+                        <Name><Text xml:lang="de">Echallens, gare (Echallens)</Text></Name>
+                        <GeoPosition>
+                            <siri:Longitude>6.63500</siri:Longitude>
+                            <siri:Latitude>46.64200</siri:Latitude>
+                        </GeoPosition>
+                    </Place>
+                    <Complete>true</Complete>
+                    <Probability>0.50</Probability>
+                </PlaceResult>
+            </OJPLocationInformationDelivery>
+        </siri:ServiceDelivery>
+    </OJPResponse>
+</OJP>

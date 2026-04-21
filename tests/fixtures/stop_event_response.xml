@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OJP xmlns="http://www.vdv.de/ojp" xmlns:siri="http://www.siri.org.uk/siri" version="2.0">
+    <OJPResponse>
+        <siri:ServiceDelivery>
+            <siri:ResponseTimestamp>2026-04-21T14:30:00+02:00</siri:ResponseTimestamp>
+            <OJPStopEventDelivery>
+                <siri:ResponseTimestamp>2026-04-21T14:30:00+02:00</siri:ResponseTimestamp>
+                <StopEventResult>
+                    <Id>result-1</Id>
+                    <StopEvent>
+                        <ThisCall>
+                            <CallAtStop>
+                                <siri:StopPointRef>ch:1:sloid:8595126:0:1</siri:StopPointRef>
+                                <StopPointName><Text xml:lang="de">Oulens-sous-Echallens, Collège</Text></StopPointName>
+                                <ServiceDeparture>
+                                    <TimetabledTime>2026-04-21T12:32:00Z</TimetabledTime>
+                                    <EstimatedTime>2026-04-21T12:35:00Z</EstimatedTime>
+                                </ServiceDeparture>
+                            </CallAtStop>
+                        </ThisCall>
+                        <Service>
+                            <Mode><PtMode>bus</PtMode></Mode>
+                            <PublishedServiceName><Text xml:lang="de">425</Text></PublishedServiceName>
+                            <DestinationText><Text xml:lang="de">Échallens, gare</Text></DestinationText>
+                            <Cancelled>false</Cancelled>
+                        </Service>
+                    </StopEvent>
+                </StopEventResult>
+                <StopEventResult>
+                    <Id>result-2</Id>
+                    <StopEvent>
+                        <ThisCall>
+                            <CallAtStop>
+                                <siri:StopPointRef>ch:1:sloid:8595126:0:1</siri:StopPointRef>
+                                <StopPointName><Text xml:lang="de">Oulens-sous-Echallens, Collège</Text></StopPointName>
+                                <ServiceDeparture>
+                                    <TimetabledTime>2026-04-21T13:02:00Z</TimetabledTime>
+                                </ServiceDeparture>
+                            </CallAtStop>
+                        </ThisCall>
+                        <Service>
+                            <Mode><PtMode>bus</PtMode></Mode>
+                            <PublishedServiceName><Text xml:lang="de">425</Text></PublishedServiceName>
+                            <DestinationText><Text xml:lang="de">Lausanne-Flon</Text></DestinationText>
+                            <Cancelled>false</Cancelled>
+                        </Service>
+                    </StopEvent>
+                </StopEventResult>
+            </OJPStopEventDelivery>
+        </siri:ServiceDelivery>
+    </OJPResponse>
+</OJP>

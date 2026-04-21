@@ -1,0 +1,33 @@
+/* Minimal custom styles — Tailwind CDN handles the rest */
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #d1d5db;
+    border-top-color: #6b7280;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.dropdown-item:hover {
+    background-color: #f3f4f6;
+}
+
+.line-badge {
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+.scheduled-crossed {
+    text-decoration: line-through;
+    opacity: 0.5;
+}
+
+.departure-passed {
+    opacity: 0.5;
+    font-style: italic;
+}
