@@ -132,6 +132,26 @@ def test_xml_timestamps_are_utc():
     assert "<DepArrTime>2026-04-21T09:12:00Z</DepArrTime>" in xml
 
 
+def test_parse_onward_stops():
+    """Parse onward calls from StopEventResult."""
+    from pathlib import Path
+    xml = (Path(__file__).parent / "fixtures" / "stop_event_with_onward.xml").read_bytes()
+    now = datetime(2026, 4, 21, 8, 0, 0, tzinfo=timezone.utc)
+    deps = parse_stop_event_response(xml, now=now)
+    assert len(deps) == 2
+
+    # R2 to Bex has onward stops: Vevey, Montreux, Bex
+    r2 = deps[0]
+    assert r2.line == "R2"
+    assert r2.destination == "Bex"
+    assert r2.onward_stops == ["Vevey", "Montreux", "Bex"]
+
+    # S1 to Yverdon has no onward calls
+    s1 = deps[1]
+    assert s1.line == "S1"
+    assert s1.onward_stops == []
+
+
 def test_cache_ttl():
     cache = TTLCache(ttl_seconds=1)
     cache.set("key1", "value1")

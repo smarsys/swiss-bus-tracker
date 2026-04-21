@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OJP xmlns="http://www.vdv.de/ojp" xmlns:siri="http://www.siri.org.uk/siri" version="2.0">
+    <OJPResponse>
+        <siri:ServiceDelivery>
+            <siri:ResponseTimestamp>2026-04-21T10:00:00+02:00</siri:ResponseTimestamp>
+            <OJPStopEventDelivery>
+                <siri:ResponseTimestamp>2026-04-21T10:00:00+02:00</siri:ResponseTimestamp>
+                <StopEventResult>
+                    <Id>result-onward-1</Id>
+                    <StopEvent>
+                        <ThisCall>
+                            <CallAtStop>
+                                <siri:StopPointRef>ch:1:sloid:8501120:0:1</siri:StopPointRef>
+                                <StopPointName><Text xml:lang="de">Lausanne</Text></StopPointName>
+                                <ServiceDeparture>
+                                    <TimetabledTime>2026-04-21T08:30:00Z</TimetabledTime>
+                                </ServiceDeparture>
+                            </CallAtStop>
+                        </ThisCall>
+                        <OnwardCall>
+                            <CallAtStop>
+                                <siri:StopPointRef>ch:1:sloid:8501300:0:1</siri:StopPointRef>
+                                <StopPointName><Text xml:lang="de">Vevey</Text></StopPointName>
+                                <ServiceArrival>
+                                    <TimetabledTime>2026-04-21T08:48:00Z</TimetabledTime>
+                                </ServiceArrival>
+                            </CallAtStop>
+                        </OnwardCall>
+                        <OnwardCall>
+                            <CallAtStop>
+                                <siri:StopPointRef>ch:1:sloid:8501400:0:1</siri:StopPointRef>
+                                <StopPointName><Text xml:lang="de">Montreux</Text></StopPointName>
+                                <ServiceArrival>
+                                    <TimetabledTime>2026-04-21T08:55:00Z</TimetabledTime>
+                                </ServiceArrival>
+                            </CallAtStop>
+                        </OnwardCall>
+                        <OnwardCall>
+                            <CallAtStop>
+                                <siri:StopPointRef>ch:1:sloid:8501500:0:1</siri:StopPointRef>
+                                <StopPointName><Text xml:lang="de">Bex</Text></StopPointName>
+                                <ServiceArrival>
+                                    <TimetabledTime>2026-04-21T09:20:00Z</TimetabledTime>
+                                </ServiceArrival>
+                            </CallAtStop>
+                        </OnwardCall>
+                        <Service>
+                            <Mode><PtMode>rail</PtMode></Mode>
+                            <PublishedServiceName><Text xml:lang="de">R2</Text></PublishedServiceName>
+                            <DestinationText><Text xml:lang="de">Bex</Text></DestinationText>
+                            <Cancelled>false</Cancelled>
+                        </Service>
+                    </StopEvent>
+                </StopEventResult>
+                <StopEventResult>
+                    <Id>result-onward-2</Id>
+                    <StopEvent>
+                        <ThisCall>
+                            <CallAtStop>
+                                <siri:StopPointRef>ch:1:sloid:8501120:0:3</siri:StopPointRef>
+                                <StopPointName><Text xml:lang="de">Lausanne</Text></StopPointName>
+                                <ServiceDeparture>
+                                    <TimetabledTime>2026-04-21T08:35:00Z</TimetabledTime>
+                                </ServiceDeparture>
+                            </CallAtStop>
+                        </ThisCall>
+                        <Service>
+                            <Mode><PtMode>rail</PtMode></Mode>
+                            <PublishedServiceName><Text xml:lang="de">S1</Text></PublishedServiceName>
+                            <DestinationText><Text xml:lang="de">Yverdon-les-Bains</Text></DestinationText>
+                            <Cancelled>false</Cancelled>
+                        </Service>
+                    </StopEvent>
+                </StopEventResult>
+            </OJPStopEventDelivery>
+        </siri:ServiceDelivery>
+    </OJPResponse>
+</OJP>

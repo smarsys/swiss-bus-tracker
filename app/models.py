@@ -30,6 +30,7 @@ class Departure(BaseModel):
     already_passed: bool = False
     stop_name: str = ""
     mode: str = ""
+    onward_stops: list[str] = []
 
     def compute_status_and_delay(self, now: datetime) -> None:
         if self.status == DepartureStatus.cancelled:

@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -18,7 +18,7 @@ load_dotenv()
 
 logging.basicConfig(level=logging.DEBUG)
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 app = FastAPI(title="Swiss Bus Tracker", version=VERSION)
 
@@ -73,7 +73,7 @@ async def api_departures(
     line: str | None = Query(None),
     direction: str | None = Query(None),
     window_min: int = Query(60, ge=1, le=360),
-    num_results: int = Query(10, ge=1, le=50),
+    num_results: int = Query(5, ge=1, le=50),
 ):
     cache_key = f"departures:{stop_ref}:{window_min}"
     lock = cache.get_lock(cache_key)
@@ -88,11 +88,19 @@ async def api_departures(
                 raise HTTPException(status_code=502, detail=str(e))
             cache.set(cache_key, departures)
 
+    # Filter by time window
+    cutoff = datetime.now(timezone.utc) + timedelta(minutes=window_min)
+    departures = [d for d in departures if d.scheduled_time <= cutoff]
+
     if line:
         departures = [d for d in departures if d.line == line]
     if direction:
         direction_lower = direction.lower()
-        departures = [d for d in departures if direction_lower in d.destination.lower()]
+        departures = [
+            d for d in departures
+            if direction_lower in d.destination.lower()
+            or any(direction_lower in s.lower() for s in d.onward_stops)
+        ]
 
     return departures[:num_results]
 

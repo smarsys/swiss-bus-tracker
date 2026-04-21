@@ -75,7 +75,7 @@ def build_stop_event_request(stop_ref: str, dep_time: str, num_results: int = 10
                     <NumberOfResults>{num_results}</NumberOfResults>
                     <StopEventType>departure</StopEventType>
                     <IncludePreviousCalls>false</IncludePreviousCalls>
-                    <IncludeOnwardCalls>false</IncludeOnwardCalls>
+                    <IncludeOnwardCalls>true</IncludeOnwardCalls>
                     <IncludeOperatingDays>false</IncludeOperatingDays>
                     <UseRealtimeData>explanatory</UseRealtimeData>
                 </Params>
@@ -151,6 +151,12 @@ def parse_stop_event_response(xml_bytes: bytes, now: datetime | None = None) -> 
 
         cancelled = cancelled_el is not None and cancelled_el.text and cancelled_el.text.lower() == "true"
 
+        onward_stops = []
+        for oc in se.findall("ojp:OnwardCall/ojp:CallAtStop", NSMAP):
+            oc_name_el = oc.find("ojp:StopPointName/ojp:Text", NSMAP)
+            if oc_name_el is not None and oc_name_el.text:
+                onward_stops.append(oc_name_el.text)
+
         dep = Departure(
             line=line_el.text if line_el is not None and line_el.text else "",
             destination=dest_el.text if dest_el is not None and dest_el.text else "",
@@ -158,6 +164,7 @@ def parse_stop_event_response(xml_bytes: bytes, now: datetime | None = None) -> 
             estimated_time=estimated_time,
             stop_name=stop_name_el.text if stop_name_el is not None and stop_name_el.text else "",
             mode=mode_el.text if mode_el is not None and mode_el.text else "",
+            onward_stops=onward_stops,
             status=DepartureStatus.cancelled if cancelled else DepartureStatus.unknown,
         )
         dep.compute_status_and_delay(now)
