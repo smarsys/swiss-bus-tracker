@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime, timezone
 
@@ -5,6 +6,8 @@ import httpx
 from lxml import etree
 
 from app.models import Departure, DepartureStatus, StopMatch
+
+logger = logging.getLogger(__name__)
 
 NS_OJP = "http://www.vdv.de/ojp"
 NS_SIRI = "http://www.siri.org.uk/siri"
@@ -18,8 +21,12 @@ def _get_config() -> tuple[str, str, str]:
     return endpoint, api_key, user_agent
 
 
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def build_location_request(name: str, limit: int = 10) -> str:
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = _utc_now_iso()
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <OJP xmlns="http://www.vdv.de/ojp"
      xmlns:siri="http://www.siri.org.uk/siri"
@@ -45,7 +52,7 @@ def build_location_request(name: str, limit: int = 10) -> str:
 
 
 def build_stop_event_request(stop_ref: str, dep_time: str, num_results: int = 10) -> str:
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = _utc_now_iso()
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <OJP xmlns="http://www.vdv.de/ojp"
      xmlns:siri="http://www.siri.org.uk/siri"
@@ -163,6 +170,7 @@ def parse_stop_event_response(xml_bytes: bytes, now: datetime | None = None) -> 
 async def search_stops(name: str, limit: int = 10) -> list[StopMatch]:
     endpoint, api_key, user_agent = _get_config()
     xml_body = build_location_request(name, limit)
+    logger.debug("OJP LocationInformationRequest XML:\n%s", xml_body)
     async with httpx.AsyncClient(follow_redirects=True, timeout=15.0) as client:
         resp = await client.post(
             endpoint,
@@ -187,6 +195,7 @@ async def get_stop_events(
     now = datetime.now(timezone.utc)
     dep_time = now.strftime("%Y-%m-%dT%H:%M:%SZ")
     xml_body = build_stop_event_request(stop_ref, dep_time, num_results)
+    logger.debug("OJP StopEventRequest XML:\n%s", xml_body)
     async with httpx.AsyncClient(follow_redirects=True, timeout=15.0) as client:
         resp = await client.post(
             endpoint,

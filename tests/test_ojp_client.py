@@ -1,10 +1,15 @@
 import asyncio
 import time
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 from app.cache import TTLCache
 from app.models import Departure, DepartureStatus
-from app.ojp_client import parse_location_response, parse_stop_event_response
+from app.ojp_client import (
+    build_stop_event_request,
+    parse_location_response,
+    parse_stop_event_response,
+)
 
 
 def test_parse_location_response(location_response_xml):
@@ -111,6 +116,21 @@ def test_scheduled_vs_delayed_status():
     dep2.compute_status_and_delay(now)
     assert dep2.status == DepartureStatus.on_time
     assert dep2.delay_minutes == 0
+
+
+def test_xml_timestamps_are_utc():
+    """Ensure build_stop_event_request emits UTC timestamps, not local time."""
+    # Simulate a machine in CEST (UTC+2): local 11:12, UTC 09:12
+    fake_utc = datetime(2026, 4, 21, 9, 12, 0, tzinfo=timezone.utc)
+    with patch("app.ojp_client.datetime") as mock_dt:
+        mock_dt.now.return_value = fake_utc
+        mock_dt.side_effect = lambda *a, **kw: datetime(*a, **kw)
+        xml = build_stop_event_request("8570187", "2026-04-21T09:12:00Z", 5)
+    # RequestTimestamp must contain 09:12, NOT 11:12
+    assert "2026-04-21T09:12:00Z" in xml
+    assert "2026-04-21T11:12" not in xml
+    # DepArrTime must also be UTC
+    assert "<DepArrTime>2026-04-21T09:12:00Z</DepArrTime>" in xml
 
 
 def test_cache_ttl():

@@ -1,4 +1,7 @@
+import logging
 import os
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -12,6 +15,8 @@ from app.ojp_client import OJPError, get_stop_events, search_stops
 
 load_dotenv()
 
+logging.basicConfig(level=logging.DEBUG)
+
 app = FastAPI(title="Swiss Bus Tracker", version="0.1.0")
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
@@ -21,6 +26,19 @@ cache = TTLCache(ttl_seconds=int(os.getenv("CACHE_TTL_SECONDS", "20")))
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/api/debug/now")
+async def debug_now():
+    utc_now = datetime.now(timezone.utc)
+    naive_now = datetime.now()
+    local_tz_name = time.tzname[time.daylight] if time.daylight else time.tzname[0]
+    return {
+        "server_now_utc_iso": utc_now.isoformat(),
+        "server_now_local_iso": utc_now.astimezone().isoformat(),
+        "server_tz": local_tz_name,
+        "python_naive_now_iso_BAD": naive_now.isoformat(),
+    }
 
 
 @app.get("/api/stops/search", response_model=list[StopMatch])
