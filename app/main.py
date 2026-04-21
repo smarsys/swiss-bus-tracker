@@ -82,6 +82,15 @@ async def api_departures(
     return departures
 
 
+@app.get("/static/sw.js")
+async def service_worker():
+    return FileResponse(
+        str(STATIC_DIR / "sw.js"),
+        media_type="application/javascript",
+        headers={"Service-Worker-Allowed": "/"},
+    )
+
+
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 

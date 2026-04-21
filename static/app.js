@@ -272,3 +272,8 @@ function escapeHtml(str) {
 
 renderFavorites();
 refreshAll();
+
+// PWA Service Worker
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/static/sw.js").catch(() => {});
+}
