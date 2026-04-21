@@ -37,3 +37,48 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  redeploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    name: Redeploy on Jelastic
+    steps:
+      - name: Trigger Jelastic container redeploy
+        env:
+          API_URL: ${{ secrets.JELASTIC_API_URL }}
+          TOKEN: ${{ secrets.JELASTIC_TOKEN }}
+          ENV_NAME: ${{ secrets.JELASTIC_ENV_NAME }}
+          NODE_GROUP: ${{ secrets.JELASTIC_NODE_GROUP }}
+        run: |
+          echo "Triggering redeploy on Jelastic..."
+          RESPONSE=$(curl -s -X POST \
+            "${API_URL}/1.0/environment/control/rest/redeploycontainers" \
+            --data-urlencode "session=${TOKEN}" \
+            --data-urlencode "envName=${ENV_NAME}" \
+            --data-urlencode "nodeGroup=${NODE_GROUP}" \
+            --data-urlencode "tag=latest" \
+            --data-urlencode "useExistingVolumes=true")
+
+          echo "Jelastic API response:"
+          echo "$RESPONSE" | head -c 500
+          echo ""
+
+          # Check success (result == 0 means OK in Jelastic API)
+          if echo "$RESPONSE" | grep -q '"result":0'; then
+            echo "✅ Redeploy triggered successfully"
+            echo "🌐 App will be live at https://bus.smarsys.com in ~1 min"
+          else
+            echo "❌ Redeploy failed. Full response above."
+            echo "Common issues:"
+            echo "- Check JELASTIC_NODE_GROUP secret (try 'cp', 'docker', or 'extra')"
+            echo "- Check JELASTIC_TOKEN is valid and not expired"
+            echo "- Check JELASTIC_ENV_NAME matches exactly (case-sensitive)"
+            exit 1
+          fi
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting 60s for redeploy to complete..."
+          sleep 60
+          VERSION=$(curl -s https://bus.smarsys.com/health | python3 -c "import sys, json; print(json.load(sys.stdin).get('version', 'unknown'))")
+          echo "Live version: $VERSION"
