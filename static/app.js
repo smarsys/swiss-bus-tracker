@@ -3,6 +3,8 @@
 const STORAGE_KEY = "swiss-bus-tracker.favorites";
 const REFRESH_INTERVAL = 30_000;
 const MAX_RETRIES = 3;
+const TZ = "Europe/Zurich";
+const TIME_FMT = { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Zurich" };
 
 // State
 let favorites = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -155,7 +157,7 @@ async function fetchDepartures(fav) {
         const deps = await resp.json();
         errorCounts[fav.id] = 0;
         renderDepartures(container, deps);
-        if (footerTime) footerTime.textContent = `Mis à jour à ${new Date().toLocaleTimeString("fr-CH")}`;
+        if (footerTime) footerTime.textContent = `Mis à jour à ${new Date().toLocaleTimeString("fr-CH", TIME_FMT)}`;
     } catch (e) {
         errorCounts[fav.id] = (errorCounts[fav.id] || 0) + 1;
         if (errorCounts[fav.id] >= MAX_RETRIES) {
@@ -173,8 +175,8 @@ function renderDepartures(container, deps) {
     container.innerHTML = deps.map(d => {
         const scheduled = new Date(d.scheduled_time);
         const estimated = d.estimated_time ? new Date(d.estimated_time) : null;
-        const timeStr = (estimated || scheduled).toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" });
-        const scheduledStr = scheduled.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" });
+        const timeStr = (estimated || scheduled).toLocaleTimeString("fr-CH", TIME_FMT);
+        const scheduledStr = scheduled.toLocaleTimeString("fr-CH", TIME_FMT);
         const showCrossed = estimated && scheduledStr !== timeStr;
         const passed = d.already_passed;
 
@@ -185,6 +187,9 @@ function renderDepartures(container, deps) {
         } else if (passed) {
             badgeColor = "bg-stone-100 text-stone-400";
             badgeText = "passé";
+        } else if (d.status === "scheduled") {
+            badgeColor = "bg-blue-100 text-blue-600";
+            badgeText = "planifié";
         } else if (d.delay_minutes <= 1) {
             badgeColor = "bg-emerald-100 text-emerald-700";
             badgeText = "à l'heure";
